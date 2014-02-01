@@ -1,15 +1,15 @@
 <?php
 
 $rules = [
-    [0, '(',   '_', 0, ['_', 'x']],
+    [0, '(',   'e', 0, ['e', 'x']],
     [0, '(',   'x', 0, ['x', 'x']],
     [0, ')',   'x', 0, []],
-    [0, 'EOF', '_', 1, []],
+    [0, 'EOF', 'e', 1, ['e']],
 ];
 
 $state = 0;
 $accept_states = [1];
-$init_stack = '_';
+$init_stack = 'e';
 
 $input = '(((()))())';
 
@@ -41,7 +41,7 @@ foreach ($tokens as $token) {
     $top = $stack->pop();
     $rule = match($rules, $state, $token, $top);
 
-    list($init_state, $match_input, $match_stack, $new_state, $push_stack) = $rule;
+    list($_0, $_1, $_2, $new_state, $push_stack) = $rule;
 
     $state = $new_state;
     foreach ($push_stack as $push_token) {
