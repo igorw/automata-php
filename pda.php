@@ -1,10 +1,12 @@
 <?php
 
 $rules = [
-    [0, '(',   'e', 0, ['e', 'x']],
-    [0, '(',   'x', 0, ['x', 'x']],
-    [0, ')',   'x', 0, []],
-    [0, 'EOF', 'e', 1, ['e']],
+    0 => [
+        '('   => ['e' => [0, ['e', 'x']],
+                  'x' => [0, ['x', 'x']]],
+        ')'   => ['x' => [0, []]],
+        'EOF' => ['e' => [1, ['e']]],
+    ],
 ];
 
 $state = 0;
@@ -18,33 +20,21 @@ $tokens = array_merge(
     ['EOF']
 );
 
-function match(array $rules, $state, $token, $top) {
-    foreach ($rules as $rule) {
-        list($init_state, $match_input, $match_stack, $new_state, $push_stack) = $rule;
-
-        if ($state === $init_state
-            && $token === $match_input
-            && $top === $match_stack) {
-
-            return $rule;
-        }
-    }
-
-    $token = var_export($token, true);
-    throw new \RuntimeException("No rule found for state $state, token $token");
-}
-
 $stack = new \SplStack();
 $stack->push($init_stack);
 
 foreach ($tokens as $token) {
     $top = $stack->pop();
-    $rule = match($rules, $state, $token, $top);
 
-    list($_0, $_1, $_2, $new_state, $push_stack) = $rule;
+    if (!isset($rules[$state][$token][$top])) {
+        $token = var_export($token, true);
+        $top = var_export($top, true);
+        throw new \RuntimeException("No rule found for state $state, token $token, top $top");
+    }
 
-    $state = $new_state;
-    foreach ($push_stack as $push_token) {
+    list($state, $push_tokens) = $rules[$state][$token][$top];
+
+    foreach ($push_tokens as $push_token) {
         $stack->push($push_token);
     }
 }
